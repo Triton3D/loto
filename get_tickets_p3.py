@@ -11,7 +11,7 @@ ticket = browser.find_element_by_css_selector(
     "ins.for_normal.with_icon.pseudo")
 
 for i in range(1, int(pages_count) + 1):
-    html_file = open('html\\' + str(i) + '.html', 'w')
+    html_file = open('..\\html\\' + str(i) + '.html', 'w')
     html_file.write(str(browser.page_source.encode('utf-8')))
     print("Страница сохранена как " + str(i) + ".html!")
     if i <= int(pages_count):
@@ -21,7 +21,7 @@ for i in range(1, int(pages_count) + 1):
 print("Сохранение прошло успешно!")
 
 for i in range(1, int(pages_count) + 1):
-    f = open('html\\' + str(i) + '.html', 'r')
+    f = open('..\\html\\' + str(i) + '.html', 'r')
     s = f.read()
     soup = BeautifulSoup(s, 'html.parser')
     tckid = soup.find_all('span', {'class': 'ticket_id'})
@@ -33,7 +33,7 @@ for i in range(1, int(pages_count) + 1):
         x = str(i).replace('<span class="ticket_id">', '')
         x = x.replace('</span>', '')
         ticket.append(int(x))
-        ticket_file = open('tickets\\' + str(x) + '.csv', 'w')
+        ticket_file = open('..\\tickets\\' + str(x) + '.csv', 'w')
 # ticket_file.close()
 
         ss = soup.find_all('tr', {'class': 'numbers'}, 'td')
@@ -57,7 +57,25 @@ for i in range(1, int(pages_count) + 1):
         ticket_file.close()
         t += 1
 
-print(ticket)
+numbers_stats = {}
+numbers_keys = [i for i in range(1, 90)]  # Генерируем список номеров бочонков
+
+# Генерируем пустой словарь со статистическими данными
+number_stats = {i: '0' for i in numbers_keys}
+
+tickets = list(set(ticket))
+j = 0
+for i in range(0, len(tickets)):
+    try:
+        ticket_file = open("..\\tikets\\" + tickets[i] + ".csv", 'r')
+        j += 1
+    except FileNotFoundError:
+        print("Билет №" + int(tickets[i]) + " не найден!")
+        ticket_file.close()
+        continue
+print("Найдено " + j + " уникальных билетов!")
+print("Всего получено билетов: " + len(ticket))
+print(number_stats)
 ##
 # my_dict={}
 # keys=[]
