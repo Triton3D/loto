@@ -24,6 +24,7 @@ for i in range(1,int(nt)+1):
    s=f.read()
    soup = BeautifulSoup(s,'html.parser')
    tckid=soup.find_all('span',{'class':'ticket_id'})
+   f.close()
    ticket=[]
    t=0
    for i in tckid:
