@@ -8,11 +8,10 @@ pages_count = input("Ведите количество страниц: ")
 browser = webdriver.Firefox()
 url = 'http://www.stoloto.ru/ruslotto/game?int=right'
 browser.get(url)
-ticket = browser.find_element_by_css_selector(
-    "ins.for_normal.with_icon.pseudo")
+ticket = browser.find_element_by_css_selector("ins.for_normal.with_icon.pseudo")
 
 for i in range(1, int(pages_count) + 1):
-    html_file = open('..\\html\\' + str(i) + '.html', 'w')
+    html_file = open('.\\html\\' + str(i) + '.html', 'w')
     html_file.write(str(browser.page_source.encode('utf-8')))
     print("Страница сохранена как " + str(i) + ".html!")
     if i <= int(pages_count):
@@ -22,7 +21,7 @@ for i in range(1, int(pages_count) + 1):
 print("Сохранение прошло успешно!")
 
 for i in range(1, int(pages_count) + 1):
-    f = open('..\\html\\' + str(i) + '.html', 'r')
+    f = open('.\\html\\' + str(i) + '.html', 'r')
     s = f.read()
     soup = BeautifulSoup(s, 'html.parser')
     tckid = soup.find_all('span', {'class': 'ticket_id'})
@@ -34,7 +33,7 @@ for i in range(1, int(pages_count) + 1):
         x = str(i).replace('<span class="ticket_id">', '')
         x = x.replace('</span>', '')
         ticket.append(int(x))
-        ticket_file = open('..\\tickets\\' + str(x) + '.csv', 'w')
+        ticket_file = open('.\\tickets\\' + str(x) + '.csv', 'w')
 # ticket_file.close()
 
         ss = soup.find_all('tr', {'class': 'numbers'}, 'td')
@@ -59,7 +58,7 @@ for i in range(1, int(pages_count) + 1):
         t += 1
 
 numbers_stats = {}
-numbers_keys = [i for i in range(1, 90)]  # Генерируем список номеров бочонков
+numbers_keys = [i for i in range(1, 91)]  # Генерируем список номеров бочонков
 
 # Генерируем пустой словарь со статистическими данными
 number_stats = {i: '0' for i in numbers_keys}
@@ -68,7 +67,7 @@ tickets = list(set(ticket))
 j = 0
 for i in range(0, len(tickets)):
     try:
-        ticket_file = open("..\\tikets\\" + str(tickets[i]) + ".csv", 'r')
+        ticket_file = open(".\\tikets\\" + str(tickets[i]) + ".csv", 'r')
         j += 1
     except FileNotFoundError:
         print("Билет №" + str(tickets[i]) + " не найден!")
