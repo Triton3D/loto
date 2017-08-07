@@ -8,18 +8,17 @@ browser = webdriver.Firefox()
 url='http://www.stoloto.ru/ruslotto/game?int=right'
 browser.get(url)
 ticket = browser.find_element_by_css_selector("ins.for_normal.with_icon.pseudo")
-for i in range(1,nt+1):
-   html_source=browser.page_source
+for i in range(1,int(nt)+1):
    html_file=open(str(i)+'.html','w')
-   html_file.write(html_source.encode('utf-8'))
-   print "Страница сохранена как " + str(i) +".html!"
-   if i<=nt:
+   html_file.write(str(browser.page_source.encode('utf-8')))
+   print("Страница сохранена как " + str(i) +".html!")
+   if i<=int(nt):
       ticket.click()
    html_file.close()
    time.sleep(5)
-print "Сохранение прошло успешно!"
+print("Сохранение прошло успешно!")
 
-for i in range(1,nt+1):
+for i in range(1,int(nt)+1):
    f=open(str(i)+'.html','r')
    s=f.read()
    soup = BeautifulSoup(s,'html.parser')
