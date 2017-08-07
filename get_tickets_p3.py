@@ -8,8 +8,9 @@ browser = webdriver.Firefox()
 url='http://www.stoloto.ru/ruslotto/game?int=right'
 browser.get(url)
 ticket = browser.find_element_by_css_selector("ins.for_normal.with_icon.pseudo")
+
 for i in range(1,int(nt)+1):
-   html_file=open(str(i)+'.html','w')
+   html_file=open('html\\'+str(i)+'.html','w')
    html_file.write(str(browser.page_source.encode('utf-8')))
    print("Страница сохранена как " + str(i) +".html!")
    if i<=int(nt):
@@ -19,7 +20,7 @@ for i in range(1,int(nt)+1):
 print("Сохранение прошло успешно!")
 
 for i in range(1,int(nt)+1):
-   f=open(str(i)+'.html','r')
+   f=open('html\\'+str(i)+'.html','r')
    s=f.read()
    soup = BeautifulSoup(s,'html.parser')
    tckid=soup.find_all('span',{'class':'ticket_id'})
@@ -30,7 +31,7 @@ for i in range(1,int(nt)+1):
       x=str(i).replace('<span class="ticket_id">','')
       x=x.replace('</span>','')
       ticket.append(int(x))
-      ticket_file=open(str(x)+'.csv','w')
+      ticket_file=open('tickets\\'+str(x)+'.csv','w')
 ##    ticket_file.close()
 
       ss=soup.find_all('tr',{'class':'numbers'},'td')
@@ -52,7 +53,8 @@ for i in range(1,int(nt)+1):
                 ticket_file.writelines(str(numbers[j][z]).replace("'","")+",")
       ticket_file.close()
       t+=1
-##         
+
+print(ticket)
 ##                          
 ##      my_dict={}
 ##      keys=[]
