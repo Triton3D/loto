@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from random import randint
 import sys
 from selenium import webdriver
 import time
@@ -17,7 +18,7 @@ for i in range(1, int(pages_count) + 1):
     if i <= int(pages_count):
         ticket.click()
     html_file.close()
-    time.sleep(3)
+    time.sleep(randint(3, 10))
 print("Сохранение прошло успешно!")
 
 for i in range(1, int(pages_count) + 1):
@@ -67,14 +68,14 @@ tickets = list(set(ticket))
 j = 0
 for i in range(0, len(tickets)):
     try:
-        ticket_file = open("..\\tikets\\" + tickets[i] + ".csv", 'r')
+        ticket_file = open("..\\tikets\\" + str(tickets[i]) + ".csv", 'r')
         j += 1
     except FileNotFoundError:
-        print("Билет №" + int(tickets[i]) + " не найден!")
+        print("Билет №" + str(tickets[i]) + " не найден!")
         ticket_file.close()
         continue
-print("Найдено " + j + " уникальных билетов!")
-print("Всего получено билетов: " + len(ticket))
+print("Найдено " + str(j) + " уникальных билетов!")
+print("Всего получено билетов: " + str(len(ticket)))
 print(number_stats)
 ##
 # my_dict={}
@@ -85,7 +86,7 @@ print(number_stats)
 # zu=[]
 # for item in z:
 # for meti in item:
-##                      if meti!='': zu.append(meti)
+# if meti!='': zu.append(meti)
 # for j in zu:
 # j=int(j)
 # my_dict[j]=my_dict.get(j)+1
