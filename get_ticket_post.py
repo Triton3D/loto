@@ -61,7 +61,7 @@ while act_tickets_count<int(need_tickets_count):
         status=req.json()['status']
         time.sleep(0.5) 
     except requests.exceptions.ConnectionError:
-        print("Нет интернета!")
+        print("\nНет интернета!")
         #sys.exc_clear()        
         pass
     
@@ -74,12 +74,12 @@ while act_tickets_count<int(need_tickets_count):
                 cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"')")
                 act_tickets_count+=1
             except:
-                print("Не удалось записать в базу данные билета №"+str(combinations[i]['number']))
+                print("\nНе удалось записать в базу данные билета №"+str(combinations[i]['number']))
                 #sys.exc_clear()
                 pass
             
             sys.stderr.write("Обработано билетов: "+str(act_tickets_count)+"\r")
             con_tickets_db.commit()
             
-print("Завершено!")
+print("\nЗавершено!")
 con_tickets_db.close()
