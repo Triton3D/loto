@@ -58,13 +58,14 @@ cursor.execute("CREATE TABLE IF NOT EXISTS table_"+str(circulation_loto)+"(ticke
 while act_tickets_count<int(need_tickets_count):
     try: 
         req=requests.post(url=ruloto_change_url,headers=ruloto_change_headers,data=ruloto_change_numbers)
-        status=req.json()['status']
-        time.sleep(0.5) 
+         
     except requests.exceptions.ConnectionError:
         print("\nНет интернета!")
-        #sys.exc_clear()        
+        #sys.exc_clear()
+        status='not connected'
         pass
-    
+    status=req.json()['status']
+    time.sleep(0.5)
     if status=='ok':
         combinations=req.json()['combinations']
         for i in range(0,20):
@@ -83,3 +84,4 @@ while act_tickets_count<int(need_tickets_count):
             
 print("\nЗавершено!")
 con_tickets_db.close()
+input("Нажмите любую клавишу для выхода...")
