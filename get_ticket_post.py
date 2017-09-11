@@ -3,7 +3,7 @@ import time
 import sqlite3
 import sys
 from bs4 import BeautifulSoup as BS
-
+from pathlib import Path
 
 ruloto_url="http://www.stoloto.ru/ruslotto/game"
 ruloto_get="int=right"
@@ -35,53 +35,64 @@ ruloto_change_headers={'Host': 'www.stoloto.ru',
 'DNT': '1',
 'Connection': 'keep-alive'}
 ruloto_change_numbers={'numbersToChange':'[]'}
-
 act_tickets_count=0
 
-
 # Парсим текущий номер тиража
-#ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
-#soup=BS(ruloto_html,'html.parser')
-circulation_loto=1195
-#BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents
-#[len('Тираж №0'):]
+ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
+soup=BS(ruloto_html,'html.parser')
+circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
 
-print("Текущий тираж №:" + str(circulation_loto))
+db_name="tickets"
 
+def stroke_message(text="Stroke message"):
+    print(text+"\r",end='')
+print("Текущий тираж №"+str(circulation_loto))
 need_tickets_count=input('Сколько билетов надо спарсить? - ')
+db_file=Path(db_name)
+if not db_file.exists():
+	print("Создание базы данных "+db_name+".db...",end='')
+else:
+	print("Подключение к базе данных "+db_name+".db...",end='')
+try:
+	db_connection=sqlite3.connect(db_name+".db")
+except sqlite3.OperationalError:
+	time.sleep(1)
+	print("Ошибка!")	
+else:
+	time.sleep(1)
+	print("Успешно!")
 
-
-con_tickets_db=sqlite3.connect("tickets.db")
-cursor=con_tickets_db.cursor()
+cursor=db_connection.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS table_"+str(circulation_loto)+"(ticket_number INTEGER PRIMARY KEY NOT NULL,numbers TEXT NOT NULL)")
 
 while act_tickets_count<int(need_tickets_count):
-    try: 
-        req=requests.post(url=ruloto_change_url,headers=ruloto_change_headers,data=ruloto_change_numbers)
-         
-    except requests.exceptions.ConnectionError:
-        print("\nНет интернета!")
-        #sys.exc_clear()
-        status='not connected'
-        pass
-    status=req.json()['status']
-    time.sleep(0.5)
-    if status=='ok':
-        combinations=req.json()['combinations']
-        for i in range(0,20):
-
-            #print("INSERT INTO tickets VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"')") 
-            try:
-                cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"')")
-                act_tickets_count+=1
-            except:
-                print("\nНе удалось записать в базу данные билета №"+str(combinations[i]['number']))
-                #sys.exc_clear()
-                pass
-            
-            sys.stderr.write("Обработано билетов: "+str(act_tickets_count)+"\r")
-            con_tickets_db.commit()
-            
+	try: 
+		req=requests.post(url=ruloto_change_url,headers=ruloto_change_headers,data=ruloto_change_numbers)
+	except requests.exceptions.ConnectionError:
+		print("\nНет интернета!")
+		status='not connected'
+		pass
+	status=req.json()['status']
+	time.sleep(0.5)
+	if status=='ok':
+		combinations=req.json()['combinations']
+		for i in range(0,20):
+			try:
+				cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"')")
+				act_tickets_count+=1
+			except:
+				print("\nНе удалось записать в базу данные билета №"+str(combinations[i]['number']))
+				pass
+			else:
+				sys.stderr.write("Обработано билетов: "+str(act_tickets_count)+"\r")
+				db_connection.commit()
 print("\nЗавершено!")
-con_tickets_db.close()
+if db_connection:
+	print("Отключение от базы данных "+db_name+".db...",end='')
+try:
+	db_connection.close()
+except:
+	print("Не удалось!")
+else:
+	print("Успешно!")
 input("Нажмите любую клавишу для выхода...")

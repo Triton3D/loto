@@ -1,0 +1,18 @@
+<p>Всего билетов в базе {{ length }}</p>
+<div>
+	<form action="{% url 'gettickets:test' %}" method="post">
+		{% csrf_token %}
+		<input type="text" name="test" value="20"/>
+		<input type="submit" value="Получить билеты"/>
+	</form>
+</div>
+{% if list_tickets %}
+	<ul>
+		{% for ticket in list_tickets %}
+		<li><a href="{% url 'gettickets:details' ticket.number %}">{{ticket.number}}</a></li>
+		{% endfor %} 
+	<ul>
+{% else %}
+	<p>Билетов не найдено</p>
+	{% endif %}
+

@@ -1,0 +1,4 @@
+<h1>Билет №{{ticket.number}}</h1>
+<h2>{{ticket.content}}</h2>
+<a href="{% url 'gettickets:index' %}">К списку билетов</a>
+
