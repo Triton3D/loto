@@ -2,8 +2,13 @@ import requests
 import time
 import sqlite3
 import sys
+
+import acttime
+
 from bs4 import BeautifulSoup as BS
 from pathlib import Path
+
+
 
 ruloto_url="http://www.stoloto.ru/ruslotto/game"
 ruloto_get="int=right"
@@ -36,16 +41,17 @@ ruloto_change_headers={'Host': 'www.stoloto.ru',
 'Connection': 'keep-alive'}
 ruloto_change_numbers={'numbersToChange':'[]'}
 act_tickets_count=0
-
+circulation_loto=0
 # Парсим текущий номер тиража
-ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
-soup=BS(ruloto_html,'html.parser')
-circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
 
 db_name="tickets"
 
 def stroke_message(text="Stroke message"):
     print(text+"\r",end='')
+ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
+soup=BS(ruloto_html,'html.parser')
+circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
+
 print("Текущий тираж №"+str(circulation_loto))
 need_tickets_count=input('Сколько билетов надо спарсить? - ')
 db_file=Path(db_name)
@@ -62,12 +68,17 @@ else:
 	time.sleep(1)
 	print("Успешно!")
 
+
 cursor=db_connection.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS table_"+str(circulation_loto)+"(ticket_number INTEGER PRIMARY KEY NOT NULL,numbers TEXT NOT NULL)")
+cursor.execute("CREATE TABLE IF NOT EXISTS table_"+str(circulation_loto)+"(ticket_number INTEGER PRIMARY KEY NOT NULL,numbers TEXT NOT NULL,date_time TEXT NOT NULL)")
 
 while act_tickets_count<int(need_tickets_count):
 	try: 
 		req=requests.post(url=ruloto_change_url,headers=ruloto_change_headers,data=ruloto_change_numbers)
+		ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
+		soup=BS(ruloto_html,'html.parser')
+		circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
+		
 	except requests.exceptions.ConnectionError:
 		print("\nНет интернета!")
 		status='not connected'
@@ -78,13 +89,13 @@ while act_tickets_count<int(need_tickets_count):
 		combinations=req.json()['combinations']
 		for i in range(0,20):
 			try:
-				cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"')")
+				cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"','"+acttime.ac_local_time(True,True)+"')")
 				act_tickets_count+=1
 			except:
 				print("\nНе удалось записать в базу данные билета №"+str(combinations[i]['number']))
 				pass
 			else:
-				sys.stderr.write("Обработано билетов: "+str(act_tickets_count)+"\r")
+				sys.stderr.write("Добавлено билетов: "+str(act_tickets_count)+"\r")
 				db_connection.commit()
 print("\nЗавершено!")
 if db_connection:
