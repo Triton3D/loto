@@ -50,5 +50,47 @@ def ac_local_time(showtime=True,showdate=False):
 		str_date=day+'.'+month+'.'+str(out_time.tm_year)
 	return(str_time+str_date)
 	
+def str_time():
+	hour=time.localtime(time.time()).tm_hour
+	minute=time.localtime(time.time()).tm_min
+	second=time.localtime(time.time()).tm_sec
 
-print(ac_local_time(True))
+	if hour<10:
+		str_hour='0'+str(hour)
+	else:
+		str_hour=str(hour)
+
+	if minute<10:
+		str_minute='0'+str(minute)
+	else:
+		str_minute=str(minute)
+
+	if second<10:
+		str_second='0'+str(second)
+	else:
+		str_second=str(second)
+	
+	return str_hour+':'+str_minute+':'+str_second
+
+def str_date():
+	year=time.localtime(time.time()).tm_year
+	month=time.localtime(time.time()).tm_mon
+	day=time.localtime(time.time()).tm_mday
+	str_year=str(year)
+	if month<10:
+		str_month='0'+str(month)
+	else:
+		str_month=str(month)
+
+	if day<10:
+		str_day='0'+str(day)
+	else:
+		str_day=str(day)
+
+	return str_day+'/'+str_month+'/'+str_year
+
+def test():
+	while True:
+		time.sleep(0.3)
+		print(str_date()+"\r", end='')
+

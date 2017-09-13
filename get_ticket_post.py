@@ -3,11 +3,11 @@ import time
 import sqlite3
 import sys
 
-import acttime
 
 from bs4 import BeautifulSoup as BS
 from pathlib import Path
 
+print("Подключаемся!...",end='')
 
 
 ruloto_url="http://www.stoloto.ru/ruslotto/game"
@@ -45,20 +45,27 @@ circulation_loto=0
 # Парсим текущий номер тиража
 
 db_name="tickets"
-
-def stroke_message(text="Stroke message"):
-    print(text+"\r",end='')
-ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
+try:
+	ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
+except:
+	input("Не могу подключиться!")
+	exit()
+print("OK!")
 soup=BS(ruloto_html,'html.parser')
 circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
 
 print("Текущий тираж №"+str(circulation_loto))
-need_tickets_count=input('Сколько билетов надо спарсить? - ')
-db_file=Path(db_name)
-if not db_file.exists():
-	print("Создание базы данных "+db_name+".db...",end='')
-else:
+#need_tickets_count=input('Сколько билетов надо спарсить? - ')\
+
+need_end_time=input("До какого времени парсить? (dd/mm/yyyy - hh:mm:ss) - ")
+end_time=int(time.mktime(time.strptime(need_end_time,"%d/%m/%Y - %H:%M:%S")))
+#print(str(end_time))
+
+db_file=Path('./'+db_name)
+if db_file.exists():
 	print("Подключение к базе данных "+db_name+".db...",end='')
+else:
+	print("Создание базы данных "+db_name+".db...",end='')
 try:
 	db_connection=sqlite3.connect(db_name+".db")
 except sqlite3.OperationalError:
@@ -68,36 +75,41 @@ else:
 	time.sleep(1)
 	print("Успешно!")
 
-
 cursor=db_connection.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS table_"+str(circulation_loto)+"(ticket_number INTEGER PRIMARY KEY NOT NULL,numbers TEXT NOT NULL,date_time TEXT NOT NULL)")
-
-while act_tickets_count<int(need_tickets_count):
+start_time=time.time()
+print("Начало в "+ time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(time.time())))
+act_time=time.time()
+while act_time<end_time :
+	act_time=time.time()
 	try: 
 		req=requests.post(url=ruloto_change_url,headers=ruloto_change_headers,data=ruloto_change_numbers)
 		ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
 		soup=BS(ruloto_html,'html.parser')
 		circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
-		
 	except requests.exceptions.ConnectionError:
 		print("\nНет интернета!")
 		status='not connected'
 		pass
-	status=req.json()['status']
-	time.sleep(0.5)
+	else:
+		status=req.json()['status']
+	time.sleep(0.3)
 	if status=='ok':
 		combinations=req.json()['combinations']
+		
 		for i in range(0,20):
 			try:
-				cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])+"','"+acttime.ac_local_time(True,True)+"')")
+				cursor.execute("INSERT INTO table_"+str(circulation_loto)+" VALUES("+combinations[i]['number']+",'"+str(combinations[i]['numbers'])[1:-1]+"','"+time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(act_time))+"')")
 				act_tickets_count+=1
 			except:
-				print("\nНе удалось записать в базу данные билета №"+str(combinations[i]['number']))
+				#print("\nНе удалось записать в базу данные билета №"+str(combinations[i]['number']))
 				pass
 			else:
-				sys.stderr.write("Добавлено билетов: "+str(act_tickets_count)+"\r")
+				print("Добавлено билетов: "+str(act_tickets_count)+" - скорость парсинга: " + str(int((act_tickets_count)/(act_time-start_time)*60)) + " билетов в минуту" + "\r",end='')
 				db_connection.commit()
-print("\nЗавершено!")
+	
+	
+print("\nЗавершено в " +time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(time.time())) + "!")
 if db_connection:
 	print("Отключение от базы данных "+db_name+".db...",end='')
 try:
