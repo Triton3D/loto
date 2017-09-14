@@ -55,9 +55,14 @@ soup=BS(ruloto_html,'html.parser')
 circulation_loto=int(BS(str(soup.select('div[class="col col2"]')),'html.parser').h3.contents[0][-4:])
 
 print("Текущий тираж №"+str(circulation_loto))
+
 #need_tickets_count=input('Сколько билетов надо спарсить? - ')\
 
-need_end_time=input("До какого времени парсить? (dd/mm/yyyy - hh:mm:ss) - ")
+if len(sys.argv)>1 and sys.argv[1]=='time':
+	need_end_time = sys.argv[2]
+else:
+	need_end_time=input("До какого времени парсить? (dd/mm/yyyy - hh:mm:ss) - ")
+
 end_time=int(time.mktime(time.strptime(need_end_time,"%d/%m/%Y - %H:%M:%S")))
 #print(str(end_time))
 
