@@ -59,7 +59,9 @@ print("Текущий тираж №"+str(circulation_loto))
 #need_tickets_count=input('Сколько билетов надо спарсить? - ')\
 
 if len(sys.argv)>1 and sys.argv[1]=='time':
-	ned_and_time = sys.argv[2]
+	need_end_time = sys.argv[2]
+elif sys.argv[1]=='all':
+	need_end_time=time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(time.time()))
 else:
 	need_end_time=input("До какого времени парсить? (dd/mm/yyyy - hh:mm:ss) - ")
 
@@ -85,8 +87,11 @@ cursor.execute("CREATE TABLE IF NOT EXISTS table_"+str(circulation_loto)+"(ticke
 start_time=time.time()
 print("Начало в "+ time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(time.time())))
 act_time=time.time()
+
 while act_time<end_time :
 	act_time=time.time()
+	if time.localtime(act_time).tm_wday==5:
+		break
 	try: 
 		req=requests.post(url=ruloto_change_url,headers=ruloto_change_headers,data=ruloto_change_numbers)
 		ruloto_html=requests.get(url=ruloto_url,data=ruloto_get).text
@@ -114,7 +119,6 @@ while act_time<end_time :
 				db_connection.commit()
 	
 	
-print("\nЗавершено в " +time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(time.time())) + "!")
 if db_connection:
 	print("Отключение от базы данных "+db_name+".db...",end='')
 try:
@@ -123,4 +127,5 @@ except:
 	print("Не удалось!")
 else:
 	print("Успешно!")
-input("Нажмите любую клавишу для выхода...")
+print("\nЗавершено в " +time.strftime("%d/%m/%Y - %H:%M:%S",time.localtime(time.time())) + "!")
+#input("Нажмите любую клавишу для выхода...")
